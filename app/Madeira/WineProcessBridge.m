@@ -2768,6 +2768,7 @@ static void *wine_process_thread(void *arg) {
         unsetenv("MADEIRA_FEX_SPLIT_LOCK");    /* a game's 0 must not reach the next game */
         /* the code-buffer policy and the launched program's folder are per launch */
         unsetenv("MADEIRA_POOL_CARVE_MERGE"); unsetenv("MADEIRA_POOL_CODE_FOREGROUND"); unsetenv("MADEIRA_GAME_FOLDER");
+        unsetenv("MADEIRA_X64_HOOK_ZONE"); unsetenv("MADEIRA_SELF_WRITE");   /* a game's hook zone, and its 0, are its own */
         unsetenv("DXMT_ENABLE_NVEXT"); unsetenv("DXMT_WSI_MONITOR_IDENTITY"); unsetenv("DXMT_WSI_MODE_TABLE");
         unsetenv("MADEIRA_GPU_VENDOR"); unsetenv("MADEIRA_GPU_DEVICE"); unsetenv("MADEIRA_GPU_NAME");
         /* madeira-bcd: the server's per-launch switches end with the session */
