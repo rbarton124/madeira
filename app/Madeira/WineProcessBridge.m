@@ -2765,6 +2765,7 @@ static void *wine_process_thread(void *arg) {
         unsetenv("MADEIRA_SRV_FGETPATH");
         g_madeira_srv_fgetpath = 0;
         unsetenv("MADEIRA_FEX_AVX"); unsetenv("MADEIRA_FRAMEGEN");   /* ml1184 */
+        unsetenv("MADEIRA_APC_BUSY_QUEUE");    /* the Dock sets it for a Ubisoft game's session (ContentView.startDock) */
         unsetenv("MADEIRA_KILL_REAP"); unsetenv("MADEIRA_UBI_CEF");   /* a game's teardown rule, and its 0, are its own */
         unsetenv("DXMT_ENABLE_NVEXT"); unsetenv("DXMT_WSI_MONITOR_IDENTITY"); unsetenv("DXMT_WSI_MODE_TABLE");
         unsetenv("MADEIRA_GPU_VENDOR"); unsetenv("MADEIRA_GPU_DEVICE"); unsetenv("MADEIRA_GPU_NAME");
