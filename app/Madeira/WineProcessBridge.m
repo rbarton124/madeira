@@ -2765,6 +2765,8 @@ static void *wine_process_thread(void *arg) {
         unsetenv("MADEIRA_SRV_FGETPATH");
         g_madeira_srv_fgetpath = 0;
         unsetenv("MADEIRA_FEX_AVX"); unsetenv("MADEIRA_FRAMEGEN");   /* ml1184 */
+        /* the code-buffer policy and the launched program's folder are per launch */
+        unsetenv("MADEIRA_POOL_CARVE_MERGE"); unsetenv("MADEIRA_POOL_CODE_FOREGROUND"); unsetenv("MADEIRA_GAME_FOLDER");
         unsetenv("DXMT_ENABLE_NVEXT"); unsetenv("DXMT_WSI_MONITOR_IDENTITY"); unsetenv("DXMT_WSI_MODE_TABLE");
         unsetenv("MADEIRA_GPU_VENDOR"); unsetenv("MADEIRA_GPU_DEVICE"); unsetenv("MADEIRA_GPU_NAME");
         /* madeira-bcd: the server's per-launch switches end with the session */
