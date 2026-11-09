@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   plan:
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     outputs:
       ipa: ${{ steps.key.outputs.ipa }}
       reuse: ${{ steps.ipa.outputs.cache-hit }}
@@ -62,7 +62,7 @@ jobs:
   reuse:
     needs: plan
     if: needs.plan.outputs.reuse == 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     env:
       MADEIRA_PLANNED_SDK: ${{ needs.plan.outputs.sdk }}
       MADEIRA_RUNTIME_SDK: ${{ needs.plan.outputs.sdk }}
@@ -99,7 +99,7 @@ jobs:
   llvm:
     needs: plan
     if: needs.plan.outputs.reuse != 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     env:
       MADEIRA_PLANNED_SDK: ${{ needs.plan.outputs.sdk }}
     timeout-minutes: 360
@@ -147,7 +147,7 @@ jobs:
   fex:
     needs: plan
     if: needs.plan.outputs.reuse != 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     env:
       MADEIRA_PLANNED_SDK: ${{ needs.plan.outputs.sdk }}
     timeout-minutes: 360
@@ -195,7 +195,7 @@ jobs:
   i386:
     needs: plan
     if: needs.plan.outputs.reuse != 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     env:
       MADEIRA_PLANNED_SDK: ${{ needs.plan.outputs.sdk }}
     timeout-minutes: 360
@@ -253,7 +253,7 @@ jobs:
   runtime:
     needs: [plan, llvm]
     if: needs.plan.outputs.reuse != 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     timeout-minutes: 360
     strategy:
       fail-fast: false
@@ -306,7 +306,7 @@ jobs:
   app:
     needs: [plan, llvm, fex, i386, runtime]
     if: needs.plan.outputs.reuse != 'true'
-    runs-on: macos-15   # lab fork: GitHub-hosted runner in place of the xcode-27 label
+    runs-on: macos-26   # lab fork: GitHub-hosted runner (Xcode 27) in place of the xcode-27 label
     env:
       MADEIRA_PLANNED_SDK: ${{ needs.plan.outputs.sdk }}
       MADEIRA_PLANNED_IPA: ${{ needs.plan.outputs.ipaenv }}
