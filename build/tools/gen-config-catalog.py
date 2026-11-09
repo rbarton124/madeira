@@ -842,6 +842,24 @@ OVERLAY = {
                         "programs ended with 0xdeadc0de. 0: the server request, as before. Read at each such write; a "
                         "process's first one is logged as [self-write].",
                 "sources": ["build/ntdll-unix/virtual_ios.c"]},
+    # wine dlls/ntdll/unix/sync.c and dlls/ntdll/sync.c (Far Cry 3, Ubisoft Connect).
+    "env.MADEIRA_SLEEP_KERNEL_APC": {"category": "Synchronisation", "title": "Non-alertable sleeps run I/O completions",
+                "kind": "bool", "default": "0",
+                "note": "Default off. 1: a non-alertable Sleep waits in the Windows server, so an I/O completion queued "
+                        "for the sleeping thread (an overlapped pipe or socket read) runs during the sleep, as on "
+                        "Windows; otherwise it waits until the thread next enters the server, which a thread that only "
+                        "sleeps never does (Far Cry 3 behind Ubisoft Connect exited after 15 s). Sleep(0) is unchanged; "
+                        "each other non-alertable sleep costs one server round trip. Set it in the game's own file; read "
+                        "at each sleep.",
+                "sources": ["wine/dlls/ntdll/unix/sync.c"]},
+    "env.MADEIRA_WOA_RECHECK": {"category": "Synchronisation", "title": "A 32-bit wait on an address re-checks every second",
+                "kind": "bool", "default": "0",
+                "note": "Default off. 1: an infinite wait on an address in a 32-bit program (SRW locks, condition "
+                        "variables, WaitOnAddress) waits in one-second slices and returns when a waker already removed it "
+                        "but its wake-up never arrived, a spurious wake-up its caller handles; logged as [woa-rescue]. "
+                        "Ubisoft Connect's browser otherwise sometimes stopped for good on a free lock. Set it in the "
+                        "game's own file; read at each slice.",
+                "sources": ["wine/dlls/ntdll/unix/sync.c", "wine/dlls/ntdll/sync.c"]},
     "pool-split": {"category": "Memory & JIT pool", "title": "Split JIT pool around the main thread's stack",
                 "kind": "bool", "default": "0",
                 "note": "1: when the pool would shrink below its size (pool, 896 MB by default) because the main "
