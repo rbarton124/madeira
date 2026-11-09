@@ -20,7 +20,7 @@ old = "  return __metal_atomic_fetch_add_explicit(out_count, 1, int(memory_order
 if "__METAL_MEMORY_FLAGS_NONE__" not in s:
     if old not in s:
         raise SystemExit(f"expected atomic call not found in {p}")
-    new = ("#ifdef __METAL_MEMORY_FLAGS_NONE__\n"
+    new = ("#if defined(__METAL_MEMORY_FLAGS_NONE__) && !defined(MADEIRA_METAL_ATOMIC_ARGS4)\n"
            + old.replace("__);", "__, __METAL_MEMORY_FLAGS_NONE__);")
            + "#else\n" + old + "#endif\n")
     p.write_text(s.replace(old, new, 1))
@@ -30,7 +30,11 @@ for name in "${SHADERS[@]}"; do
   [[ -f "$SRC/$name.metal" ]] || { echo "ERROR: missing shader source $SRC/$name.metal (is the dxmt submodule checked out?)" >&2; exit 1; }
   echo "shader $name: compiling"
   mkdir -p "$OUT"
+  # lab: Xcode 26.6's Metal toolchain (17F109) defines __METAL_MEMORY_FLAGS_NONE__ but its builtin
+  # still takes four arguments; such a toolchain compiles the four-argument call.
   xcrun -sdk macosx metal -o "$OUT/$name.air" -c "$SRC/$name.metal" \
-    -std=metal3.1 --target=air64-apple-macos14.0
+    -std=metal3.1 --target=air64-apple-macos14.0 ||
+  xcrun -sdk macosx metal -o "$OUT/$name.air" -c "$SRC/$name.metal" \
+    -std=metal3.1 --target=air64-apple-macos14.0 -DMADEIRA_METAL_ATOMIC_ARGS4
   xxd -n "$name" -i "$OUT/$name.air" "$OUT/$name.h"
 done
