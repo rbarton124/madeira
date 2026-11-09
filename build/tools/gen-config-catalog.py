@@ -796,6 +796,16 @@ OVERLAY = {
                         "4's FC64.dll searches upward from ntdll and otherwise quits with 'Error at hooking'). Set it in "
                         "the game's own file; read when each 64-bit program starts. Logged as [hook-zone].",
                 "sources": ["build/ntdll-unix/virtual_ios.c"]},
+    # In-process WriteProcessMemory (build/ntdll-unix/virtual_ios.c ios_self_write; Ubisoft Connect, Far Cry 4).
+    "env.MADEIRA_SELF_WRITE": {"category": "Memory & JIT pool", "kind": "bool", "default": "1",
+                "title": "A program writes its own memory",
+                "note": "On by default. A program's WriteProcessMemory into itself (the hooks Ubisoft Connect and Far Cry "
+                        "4's FC64.dll install) is done in ntdll, page by page as on Windows: a 32-bit program inside its "
+                        "own window, a 64-bit program inside its DLLs and EXE or its hook zone "
+                        "(env.MADEIRA_X64_HOOK_ZONE). Before, the server refused every such write (no task port) and those "
+                        "programs ended with 0xdeadc0de. 0: the server request, as before. Read at each such write; a "
+                        "process's first one is logged as [self-write].",
+                "sources": ["build/ntdll-unix/virtual_ios.c"]},
     "pool-split": {"category": "Memory & JIT pool", "title": "Split JIT pool around the main thread's stack",
                 "kind": "bool", "default": "0",
                 "note": "1: when the pool would shrink below its size (pool, 896 MB by default) because the main "
