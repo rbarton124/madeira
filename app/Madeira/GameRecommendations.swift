@@ -1586,12 +1586,17 @@ extension GameRecommendations {
     /// engine changes (2026-11-08, an iPhone): the client signs in and starts Far Cry 3 and Far Cry 4. Its own
     /// write into its code (env.MADEIRA_SELF_WRITE) and its Chromium switches (env.MADEIRA_UBI_CEF) are on by
     /// default; env.MADEIRA_WOA_RECHECK = 1 re-checks an infinite wait on an address every second, so a wake the
-    /// 32-bit client misses only delays it (its browser stopped in 2 of 11 Far Cry 3 starts without it).
+    /// 32-bit client misses only delays it (its browser stopped in 2 of 11 Far Cry 3 starts without it). On Madeira
+    /// (2026-11-10, an iPhone18,2), started from the library to sign in: it opened only in the Wine desktop with
+    /// Windows services started first (launchMode, startServices), and with one 592 MB pool region it ran out of code
+    /// buffers right after signing in (2 of 3 starts, "JIT pool exhausted"); pool-split gives it the second region,
+    /// as the Far Cry lists do for the game and Ubisoft Connect together.
     static let ubisoftConnect = GameRecommendation(
         id: "ubisoft-connect", title: "Ubisoft Connect", version: 1,
         config: """
         # Madeira's recommended settings for Ubisoft Connect.
         # Reset to Recommended, at the bottom of the game's settings, brings them back.
+        pool-split = 1
         env.MADEIRA_EC_HOOK_TRACE = 0
         env.MADEIRA_WOA_RECHECK = 1
         # The defaults this list was tested with (upstream's differ).
@@ -1599,7 +1604,8 @@ extension GameRecommendations {
         env.MADEIRA_CTX_CPU_AREA = 2
         env.MADEIRA_WAIT_CHILDREN = 1
         env.MADEIRA_JIT_DUMP = 0
-        """)
+        """,
+        launchMode: "desktop", startServices: true)
 
     /// Far Cry 3 (Steam App ID 220240, 32-bit), started through Madeira Dock and Ubisoft Connect (docs/UBISOFT.md).
     /// Device-tested on BCD, a fork of Madeira, with the same engine changes (2026-11-08, an iPhone): 35-39 fps average,
