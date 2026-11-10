@@ -942,16 +942,29 @@ enum DockInstallers {
     /// env.MADEIRA_APC_BUSY_QUEUE = 1 there: without it an I/O completion for a busy thread was
     /// handed to another waiting thread or dropped ([apc-requeue]) and the game starter never
     /// started the play session ("Gamestarter must be initialized before game can be launched").
+    ///
+    /// `values` are what the launcher's games read to find it, written at a start while the
+    /// launcher is in the prefix and only where the prefix has no such value. Ubisoft Connect's
+    /// installer, run by the Dock (2026-11-09, client 175.0.13393), left out its install folder:
+    /// HKLM\Software\Wow6432Node\Ubisoft\Launcher held only "Installer Language", the
+    /// launcher's own service logged "Failed to get client install dir registry key", and each
+    /// game's Ubisoft loader said "Uplay PC is not currently installed" (Far Cry 4) or ended its
+    /// game (Far Cry 3). A prefix where Ubisoft Connect runs games has
+    /// InstallDir = "C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\" there.
     struct SharedLauncher: Sendable {
         let installer: String
         let programs: [String]
         let sessionEnv: [String: String]
+        let values: [SteamInstallValue]
     }
     nonisolated static let sharedLauncherInstallers: [SharedLauncher] = [
         SharedLauncher(installer: "ubisoftconnectinstaller.exe",
                        programs: ["C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\UbisoftConnect.exe",
                                   "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\upc.exe"],
-                       sessionEnv: ["MADEIRA_APC_BUSY_QUEUE": "1"]),
+                       sessionEnv: ["MADEIRA_APC_BUSY_QUEUE": "1"],
+                       values: [SteamInstallValue(hive: .machine, key: "Software\\Ubisoft\\Launcher", name: "InstallDir",
+                                                  data: .string("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\"),
+                                                  followsInstall: false)]),
     ]
 
     /// The shared launcher a program installs, by its file name.
@@ -969,6 +982,16 @@ enum DockInstallers {
             guard let url = resolve(path, drive: drive) else { return false }
             return FileManager.default.fileExists(atPath: url.path, isDirectory: &folder) && !folder.boolValue
         }
+    }
+
+    /// The values of the shared launchers among a game's install-script programs that are in the
+    /// prefix (SharedLauncher.values).
+    nonisolated static func launcherValues(_ processes: [SteamInstallProcess], drive: URL) -> [SteamInstallValue] {
+        var values: [SteamInstallValue] = []
+        for process in processes where installsPresentLauncher(process, drive: drive) {
+            for value in sharedLauncher(process)?.values ?? [] where !values.contains(value) { values.append(value) }
+        }
+        return values
     }
 
     /// The session lines of the shared launchers among a game's install-script programs, whether
@@ -1187,6 +1210,18 @@ enum DockInstallers {
                     LogStore.shared.log("[dock-installers] app=\(app) registry values=\(values.count) written=\(written)")
                 } catch {
                     LogStore.shared.log("[dock-installers] app=\(app) registry values not written: \(error.localizedDescription)", level: .error)
+                }
+            }
+        }
+        // A shared launcher in the prefix: the values its games find it by, where missing.
+        if flag("MADEIRA_INSTALL_LAUNCHER_REGISTRY") {   // 0: a shared launcher's values (SharedLauncher.values) are not written
+            let values = launcherValues(found, drive: drive)
+            if !values.isEmpty {
+                do {
+                    let written = try SteamInstallRegistry.write(values, prefix: prefix)
+                    LogStore.shared.log("[dock-installers] app=\(app) launcher registry values=\(values.count) written=\(written)")
+                } catch {
+                    LogStore.shared.log("[dock-installers] app=\(app) launcher registry values not written: \(error.localizedDescription)", level: .error)
                 }
             }
         }
