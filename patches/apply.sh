@@ -5,15 +5,12 @@
 #
 # Applies this repository's Wine changes (patches/wine-*.patch, in order) to the
 # wine checkout before build/windows-runtime/build.sh and build/ntdll-unix/build.sh
-# build from it. docs/BUILDING.md had this as a step by hand, so the CI runtime
-# built opengl32.dll and opengl32's unix side without
-# patches/wine-opengl-winios.patch: the ARM64EC DLL kept Wine's 0x7a800000 base
-# and the 32-bit thunks dereferenced guest addresses without the window base (a
-# 32-bit program died in wow64_thread_attach as soon as it loaded opengl32).
+# build from it (patches/wine-opengl-winios.patch: opengl32.dll's image base and
+# the guest pointers of its 32-bit thunks).
 # As with build/dxmt-patches/apply.sh, the wine submodule and its repository are
 # not changed: the patches only touch the working tree, and a patch already
 # applied is skipped, so every build script can call this. `apply.sh --revert`
-# takes them out again.
+# takes them out again. See docs/BUILDING.md.
 set -eu
 R="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 S="$R/wine"

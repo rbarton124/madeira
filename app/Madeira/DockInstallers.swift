@@ -722,6 +722,8 @@ struct DockInstallLedger: Codable, Equatable, Sendable {
 /// - `MADEIRA_INSTALL_SKIP_LAUNCHER`: a shared launcher's installer (sharedLauncherInstallers)
 ///   is recorded done instead of run when the launcher is already in the prefix (off: it runs
 ///   for every game that lists it).
+/// - `MADEIRA_INSTALL_LAUNCHER_REGISTRY`: a shared launcher in the prefix gets the values its
+///   games find it by (SharedLauncher.values) where the prefix has none (off: none are written).
 /// - `MADEIRA_DOCK_INSTALL_SEPARATE` (madeira-bcd): a start that runs installers runs only
 ///   them; the game starts after Madeira is restarted (off: the host follows in the same session).
 /// - `MADEIRA_DOCK_RESET_CLEAN` (madeira-bcd): Reset also moves what the installers put into

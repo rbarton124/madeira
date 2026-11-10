@@ -34,14 +34,13 @@ both games sign in through Ubisoft Connect and play.
   bounded re-check of infinite waits on an address in 32-bit programs
   (`env.MADEIRA_WOA_RECHECK`), and a DxDiag provider that initialises without
   DirectShow.
-- `build/fex-patches/0002-ios-split-lock-atomics-inline.patch`: atomics that
-  cross a 16-byte boundary run inline instead of trapping (Far Cry 4 does about
-  450,000 at each start, the launcher about 200,000).
 - `build/hidpad/hidpad_ids.h`: the Xbox 360 controller identity
   (`env.MADEIRA_PAD_MODE = xbox360`).
 - `app/Madeira/DockInstallers.swift`: the launcher's installer is not run again
-  when the launcher is in the prefix, and a game whose install script runs it
-  gets the launcher's session line (`sharedLauncherInstallers`).
+  when the launcher is in the prefix, a game whose install script runs it gets
+  the launcher's session line, and the launcher's `InstallDir` value, which its
+  installer leaves out, is written where the prefix has none
+  (`sharedLauncherInstallers`, `env.MADEIRA_INSTALL_LAUNCHER_REGISTRY`).
 - `app/Madeira/GameRecommendations.swift`: the lists for Ubisoft Connect, Far
   Cry 3 and Far Cry 4.
 
@@ -63,9 +62,11 @@ for example to sign in before a game. Its list starts it in the Wine desktop
 with Windows services first; without them it did not open. It is slow, and
 the first sign-in can take a while.
 
-Far Cry 4 needs a split JIT pool of about 835 MB or more; its list turns the
-split on. A session whose second pool region lands below the first can still
-run out; start it again.
+The games and Ubisoft Connect's processes together need more code buffers than
+one JIT pool region holds, so the three lists turn on the split pool
+(`pool-split = 1`; about 860 to 880 MB in two regions in the tested sessions).
+If a session still runs out ("JIT pool exhausted" in the log), start it
+again.
 
 ## Not supported
 
@@ -94,7 +95,6 @@ run out; start it again.
     python3 tests/host/check-pool-code-policy.py
     python3 tests/host/check-sleep-kernel-apc.py
     python3 tests/host/check-woa-recheck.py
-    python3 tests/host/check-fex-split-lock.py
     python3 tests/host/check-hidpad.py
     python3 tests/host/check-dock-installers.py
     python3 tests/host/check-game-recommendations.py

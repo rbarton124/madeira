@@ -17130,7 +17130,7 @@ static void ios_sc_render_handler_patch( char *base, SIZE_T total_size, const IM
 
 /* [ubi-cef] Ubisoft Connect's libcef.dll keeps the browser's command line (on unless env.MADEIRA_UBI_CEF = 0).
  *
- * THIS EDITS A THIRD-PARTY MODULE IN MEMORY (as [sc-rph] above does for Social Club's helper), and only a build listed in
+ * This edits a third-party module in memory, as [sc-rph] above does for Social Club's helper, and only a build listed in
  * ios_ubi_cef_builds below; env.MADEIRA_UBI_CEF = 0 turns it off together with process_ios.c's switches.
  *
  * Why: upc.exe, the CEF browser of Ubisoft Connect, runs with cef_settings_t.command_line_args_disabled set. CEF's
