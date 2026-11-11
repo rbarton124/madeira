@@ -1586,9 +1586,12 @@ extension GameRecommendations {
     /// and starts Far Cry 3 and Far Cry 4. Its write into its own code (env.MADEIRA_SELF_WRITE) and its Chromium switches
     /// (env.MADEIRA_UBI_CEF) are on by default. WOA_RECHECK re-checks an infinite wait on an address every second, so a
     /// wake the 32-bit client misses only delays it. Started from the library, it opened only in the Wine desktop with
-    /// Windows services started first (launchMode, startServices), and in one 592 MB pool region it ran out of code
-    /// buffers right after signing in (2 of 3 starts, "JIT pool exhausted"); with pool-split (864 MB in two regions) it
-    /// did not.
+    /// Windows services started first (launchMode, startServices), and it ran out of code buffers right after reading
+    /// the signed-in account: in one 592 MB pool region in 2 of 3 starts, and with pool-split (864-894 MB) still in 2 of
+    /// 4 ("JIT pool exhausted", upc.exe ended). With no game in front its client, UplayService.exe and the browser's
+    /// UplayWebCore.exe processes took full-size code buffers until the pool's tail reached its limit; POOL_CODE_FOREGROUND
+    /// with POOL_CODE_FOREGROUND_PROGRAM = upc.exe keeps the client's budget and holds the others to 16 MB, as they are
+    /// behind a game. A game started from its window runs with this list, held to 16 MB as well (docs/UBISOFT.md).
     static let ubisoftConnect = GameRecommendation(
         id: "ubisoft-connect", title: "Ubisoft Connect", version: 1,
         config: """
@@ -1597,6 +1600,8 @@ extension GameRecommendations {
         pool-split = 1
         env.MADEIRA_EC_HOOK_TRACE = 0
         env.MADEIRA_WOA_RECHECK = 1
+        env.MADEIRA_POOL_CODE_FOREGROUND = 1
+        env.MADEIRA_POOL_CODE_FOREGROUND_PROGRAM = upc.exe
         # The defaults this list was tested with (upstream's differ).
         env.MADEIRA_FREE_DELAY_MS = 2000
         env.MADEIRA_CTX_CPU_AREA = 2

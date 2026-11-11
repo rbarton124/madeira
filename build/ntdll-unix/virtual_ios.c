@@ -356,7 +356,13 @@ static size_t ios_pool_code_cap( size_t total, size_t head, size_t tail,
  * keeps the pool's budget cap, and the cap lift for a ready free carve; every other process of the session is held to
  * IOS_POOL_OTHER_MAX per buffer, free carves included (the switch turns on MADEIRA_POOL_CARVE_MERGE's cut as well, so such a request
  * gets a piece of that size from a larger free carve). A buffer the program being played freed, or left behind when it exited, is not
- * handed to another program for IOS_POOL_FG_HOLD_SEC: its next generation, or the game's restart through a launcher, takes it back. */
+ * handed to another program for IOS_POOL_FG_HOLD_SEC: its next generation, or the game's restart through a launcher, takes it back.
+ *
+ * env.MADEIRA_POOL_CODE_FOREGROUND_PROGRAM names one program of the folder (an image file name, "upc.exe") for a launcher started
+ * on its own, whose helpers live in its own folder: then only that program keeps the budget and the folder's other programs are
+ * held as well (Ubisoft Connect from the library: without a game in front, its client, UplayService.exe and the browser's
+ * UplayWebCore.exe processes took full-size buffers until the tail reached its limit, and upc.exe ran out of code buffers while
+ * loading its main window). */
 #define IOS_POOL_OTHER_MAX   (16u << 20)
 #define IOS_POOL_FG_HOLD_SEC 120
 
@@ -397,6 +403,28 @@ static int ios_pool_path_in_folder( const WCHAR *path, size_t len, const char *f
         if (c != w) return 0;
     }
     return path[n] == '\\' || path[n] == '/';
+}
+
+/* 1 when the last component of the image path `path` (len WCHARs) is `name`, ASCII case ignored. A name that is empty, holds a
+ * separator or a character outside ASCII matches nothing. */
+static int ios_pool_path_is_program( const WCHAR *path, size_t len, const char *name )
+{
+    size_t n, k, base = 0;
+
+    if (!path || !name || !(n = strlen( name ))) return 0;
+    for (k = 0; k < n; k++)
+        if ((unsigned char)name[k] >= 0x80 || name[k] == '\\' || name[k] == '/') return 0;
+    for (k = 0; k < len; k++) if (path[k] == '\\' || path[k] == '/') base = k + 1;
+    if (len - base != n) return 0;
+    for (k = 0; k < n; k++)
+    {
+        WCHAR c = path[base + k], w = (unsigned char)name[k];
+
+        if (c >= 'A' && c <= 'Z') c += 32;
+        if (w >= 'A' && w <= 'Z') w += 32;
+        if (c != w) return 0;
+    }
+    return 1;
 }
 
 /* 1 when a free carve last handed to the program being played (carve_fg), freed or retired at `freed_at`, is held back from the
@@ -5618,7 +5646,8 @@ USHORT ios_cur_image_info_machine(void)
 
 /* pool-fg: the calling pseudo-process's class for its code buffers: IOS_POOL_FG_OFF when the policy is off for this session
  * (no env.MADEIRA_POOL_CODE_FOREGROUND = 1, or no usable game folder in MADEIRA_GAME_FOLDER), else IOS_POOL_FG_GAME when its image lies in
- * the game folder and IOS_POOL_FG_OTHER when not. Its image path is read lock-free from its own PEB, as ios_thread_stack_floor does;
+ * the game folder (and, with env.MADEIRA_POOL_CODE_FOREGROUND_PROGRAM, is that program) and IOS_POOL_FG_OTHER when not. Its image
+ * path is read lock-free from its own PEB, as ios_thread_stack_floor does;
  * an unreadable path counts as another program. Both variables are read at each new carve (a few hundred per session), so a later
  * session of the same app run sees its own. One [pool-fg] line per process. */
 enum { IOS_POOL_FG_OFF = 0, IOS_POOL_FG_OTHER = 1, IOS_POOL_FG_GAME = 2 };
@@ -5628,6 +5657,7 @@ static int ios_pool_fg_class(void)
     static ULONG logged_pid[64];
     static unsigned int logged_n;
     const char *on = getenv( "MADEIRA_POOL_CODE_FOREGROUND" ), *env = getenv( "MADEIRA_GAME_FOLDER" );
+    const char *program = getenv( "MADEIRA_POOL_CODE_FOREGROUND_PROGRAM" );
     char folder[1024], name[48];
     size_t n, len = 0, k, base = 0;
     const WCHAR *path = NULL;
@@ -5643,7 +5673,8 @@ static int ios_pool_fg_class(void)
     if (!(n = ios_pool_game_folder_len( folder ))) return IOS_POOL_FG_OFF;
     pp = peb ? peb->ProcessParameters : NULL;
     if (pp) { path = pp->ImagePathName.Buffer; len = pp->ImagePathName.Length / sizeof(WCHAR); }
-    cls = ios_pool_path_in_folder( path, len, folder, n ) ? IOS_POOL_FG_GAME : IOS_POOL_FG_OTHER;
+    cls = ios_pool_path_in_folder( path, len, folder, n ) &&
+          (!program || !*program || ios_pool_path_is_program( path, len, program )) ? IOS_POOL_FG_GAME : IOS_POOL_FG_OTHER;
     pthread_mutex_lock( &log_lock );
     for (i = 0; i < logged_n && logged_pid[i] != pid; i++) ;
     if (i == logged_n && logged_n < 64)
