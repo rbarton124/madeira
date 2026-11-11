@@ -4933,7 +4933,12 @@ NTSTATUS WINAPI NtSetInformationProcess( HANDLE handle, PROCESSINFOCLASS class, 
         break;
 
     case ProcessExecuteFlags:
-        if ((is_win64 && !is_wow64()) || size != sizeof(ULONG)) return STATUS_INVALID_PARAMETER;
+        /* dep-caller: only a WoW64 process has DEP options, as on Windows. is_wow64() answers for the session
+         * once any 32-bit pseudo-process has booted, so a 64-bit process got through: Far Cry 4's second
+         * FarCry4.exe, loading bink2w64.dll (no NX_COMPAT) beside Ubisoft Connect, turned DEP off session-wide,
+         * every view was re-protected and ~220 of the 32-bit processes' images were copied into the JIT pool
+         * (236 MB, libcef.dll's 188 MB copy failing). The calling thread's own TEB decides. */
+        if ((is_win64 && !NtCurrentTeb()->WowTebOffset) || size != sizeof(ULONG)) return STATUS_INVALID_PARAMETER;
         {
             /* ml1354: DEP is per process. The flags were one session-wide value, so a
              * 32-bit browser making DEP permanent for itself also locked every later
