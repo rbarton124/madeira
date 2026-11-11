@@ -2769,6 +2769,7 @@ static void *wine_process_thread(void *arg) {
         /* the code-buffer policy and the launched program's folder are per launch */
         unsetenv("MADEIRA_POOL_CARVE_MERGE"); unsetenv("MADEIRA_POOL_CODE_FOREGROUND"); unsetenv("MADEIRA_GAME_FOLDER");
         unsetenv("MADEIRA_X64_HOOK_ZONE"); unsetenv("MADEIRA_SELF_WRITE");   /* a game's hook zone, and its 0, are its own */
+        unsetenv("MADEIRA_POOL_CODE_FOREGROUND_PROGRAM");   /* a launcher's own program choice is its session's */
         unsetenv("MADEIRA_APC_BUSY_QUEUE");    /* the Dock sets it for a Ubisoft game's session (ContentView.startDock) */
         unsetenv("MADEIRA_KILL_REAP"); unsetenv("MADEIRA_UBI_CEF");   /* a game's teardown rule, and its 0, are its own */
         unsetenv("MADEIRA_SLEEP_KERNEL_APC"); unsetenv("MADEIRA_WOA_RECHECK");   /* a game's sleep and wait rules are its own */

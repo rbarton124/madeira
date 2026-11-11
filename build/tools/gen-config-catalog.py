@@ -825,6 +825,14 @@ OVERLAY = {
                         "Connect). The launched program is the one in env.MADEIRA_GAME_FOLDER. Set it in the game's own "
                         "file; read at each new buffer; [pool-fg] names each program's class.",
                 "sources": ["build/ntdll-unix/virtual_ios.c"]},
+    "env.MADEIRA_POOL_CODE_FOREGROUND_PROGRAM": {"category": "Memory & JIT pool", "kind": "text", "default": "",
+                "title": "The launched folder's one program that keeps its code buffers",
+                "note": "Unset: every program in the launched folder keeps its code buffers (env.MADEIRA_POOL_CODE_FOREGROUND). "
+                        "An image file name, such as upc.exe: only that program does, and the folder's other programs are held "
+                        "to 16 MB as well. For a launcher started on its own whose helpers live in its folder (Ubisoft Connect "
+                        "from the library). Set it in the program's own file; read at each new buffer; cleared when the "
+                        "session ends.",
+                "sources": ["build/ntdll-unix/virtual_ios.c"]},
     "env.MADEIRA_GAME_FOLDER": {"category": "Memory & JIT pool",
                 "note": "Set by the app at each launch: the folder of the program the player launched (a Steam game's "
                         "install folder, else the folder of the library entry's program), for "
