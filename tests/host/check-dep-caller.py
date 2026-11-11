@@ -9,8 +9,8 @@ the session once any 32-bit pseudo-process has booted. Far Cry 4's second FarCry
 bink2w64.dll, a module without NX_COMPAT, beside Ubisoft Connect's 32-bit processes; the loader asked to
 turn DEP off, the call went through, and virtual_set_force_exec, finding no guest window for the caller,
 re-protected every view of the session: about 220 images of the 32-bit processes were copied into the
-JIT pool (236 MB; libcef.dll's 188 MB copy failed), the space Far Cry 4's code buffers need (2026-11-10,
-every FC4 start through Ubisoft Connect). The calling thread's own TEB now decides.
+JIT pool's image half, about 50 MB that Far Cry 4's code buffers need (libcef.dll's 188 MB copy failed for
+lack of room; 2026-11-10, every FC4 start through Ubisoft Connect). The calling thread's own TEB now decides.
 
 Checks, with the real `case ProcessExecuteFlags:` block of NtSetInformationProcess compiled on the host
 (ASan/UBSan) against a model of the calling thread's TEB, the session-wide wow_peb, the per-window DEP
