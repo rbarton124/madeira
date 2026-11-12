@@ -1,0 +1,43 @@
+name: Publish test IPA
+
+# Lab fork only: attaches the IPA of an earlier "Build IPA" run to a release, so a PR can link it.
+on:
+  push:
+    branches: ['ci/publish-ipa']
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      RUN_ID: '43143994999'
+      TARGET: 95be2319e06d47f2fecc1cbe85898624c269e862
+      TAG: ubisoft-far-cry-test-1
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Madeira-ipa
+          run-id: ${{ env.RUN_ID }}
+          github-token: ${{ github.token }}
+          path: ipa
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la ipa
+          shopt -s nullglob
+          files=(ipa/*.ipa)
+          [ ${#files[@]} -eq 1 ] || { echo "expected one .ipa, found ${#files[@]}"; exit 1; }
+          cat > notes.md <<NOTES
+          Test build for the willfaust/Madeira PR "Ubisoft Connect, Far Cry 3 and Far Cry 4: sign-in and play through Madeira Dock" (branch \`submit/ubisoft-far-cry\`).
+
+          Built by [Build IPA run ${RUN_ID}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}) from ${TARGET:0:7}: the PR branch plus this fork's CI files. Not an official Madeira release.
+
+          Install it as any Madeira IPA. See docs/UBISOFT.md in the PR for playing Ubisoft Connect, Far Cry 3 and Far Cry 4 through Madeira Dock.
+          NOTES
+          sha256sum "${files[0]}"
+          gh release create "$TAG" "${files[0]}" --repo "$GITHUB_REPOSITORY" --target "$TARGET" \
+            --title "Ubisoft Connect, Far Cry 3 and Far Cry 4 (test build)" --notes-file notes.md --prerelease
