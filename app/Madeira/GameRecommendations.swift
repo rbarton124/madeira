@@ -1647,7 +1647,12 @@ extension GameRecommendations {
     /// processes get at most 16 MB each (POOL_CODE_FOREGROUND); pool-split, as for Far Cry 3. The game reads a controller
     /// through XInput only after it finds an Xbox controller among the devices: PAD_MODE = xbox360 adds the device
     /// Windows lists beside a wired Xbox 360 pad. Its audio breaks up with the audio lead, as Far Cry 3's. Ubisoft
-    /// Connect's lines are as Far Cry 3's.
+    /// Connect's lines are as Far Cry 3's. The game's folder holds a 32-bit program, so the Dock holds a 4 GB guest
+    /// window and 3 GB of the emulator's arena for one from session start (MADEIRA_WOW_HOLD_WINDOWS), but no 32-bit
+    /// program of the folder runs (Ubisoft Connect's and Steam's take other windows), and the window it holds is the
+    /// space next to the band all the session's 64-bit processes share. With it held, that band ran out in 1 of 3
+    /// starts (2026-11-11): xaudio2_7.dll could not be mapped (c0000017) and the game crashed opening its first
+    /// window. HOLD_WINDOWS = 0 holds neither, as in the BCD fork, whose Far Cry 4 sessions never held one.
     static let farCry4 = GameRecommendation(
         id: "far-cry-4", title: "Far Cry 4", version: 1,
         config: """
@@ -1663,6 +1668,7 @@ extension GameRecommendations {
         env.MADEIRA_KILL_REAP = 1
         env.MADEIRA_PAD_MODE = xbox360
         env.MADEIRA_AUDIO_LEAD_MS = 0
+        env.MADEIRA_WOW_HOLD_WINDOWS = 0
         # The defaults this list was tested with (upstream's differ).
         env.MADEIRA_FREE_DELAY_MS = 2000
         env.MADEIRA_CTX_CPU_AREA = 2

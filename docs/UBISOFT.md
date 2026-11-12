@@ -75,6 +75,12 @@ one JIT pool region holds, so the three lists turn on the split pool
 If a session still runs out ("JIT pool exhausted" in the log), start it
 again.
 
+Far Cry 4's folder holds a 32-bit program that its sessions never start, so
+the Dock would hold a 4 GB guest window for it all session. That is the room
+the session's 64-bit processes overflow into; with it held, one start in three
+could not load the game's audio DLL and crashed opening its first window. Its
+list turns the hold off (`env.MADEIRA_WOW_HOLD_WINDOWS = 0`).
+
 ## Not supported
 
 - Ubisoft Connect's in-game overlay: the game starter's injection does not take,
